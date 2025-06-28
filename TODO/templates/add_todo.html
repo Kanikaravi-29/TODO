@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Todo App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Body and Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: #004085;
+            padding: 1rem 1.5rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .navbar a:hover {
+            color: #c2e9fb;
+        }
+        .navbar .brand a {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-left: 0;
+        }
+        .navbar .nav-links .user-greeting {
+            margin-right: 15px;
+            font-size: 0.9rem;
+        }
+        .badge-notification {
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            vertical-align: super;
+            margin-left: 2px;
+        }
+
+        /* Main App Container */
+        .app-container {
+            max-width: 700px; /* Adjusted for a typical form width */
+            margin: 0 auto;
+            padding: 25px 20px;
+        }
+
+        /* Flash Messages Styling */
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0;
+        }
+        .flash-messages li {
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .flash-messages .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .flash-messages .danger  { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .flash-messages .info    { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+
+        /* Form Container Styles */
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px 35px; /* More padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .form-container h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        /* Form Group & Input Styles (for WTForms) */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #343a40;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #495057;
+            background-color: #fff;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-group select {
+            appearance: none; /* For custom arrow if desired */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right .75rem center;
+            background-size: 8px 10px;
+        }
+
+        /* Field-specific errors from WTForms */
+        .field-error span {
+            color: #dc3545;
+            font-size: 0.85em;
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* Submit Button */
+        input[type="submit"].submit-btn { /* Targeting WTForms submit button */
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #007bff; /* Primary blue */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            margin-top: 10px; /* Space above button */
+        }
+        input[type="submit"].submit-btn:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="submit"].submit-btn:active {
+            background-color: #004085;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+
+        /* Footer Styling */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">
+            <a href="{{ url_for('dashboard') }}">TodoApp</a>
+        </div>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('add_todo') }}">Add Todo</a>
+                <a href="{{ url_for('view_todos') }}">View Todos</a>
+                <a href="{{ url_for('notifications_page') }}">
+                    Notifications
+                    {% if unread_notifications_count > 0 %}
+                        <span class="badge-notification">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                <span class="user-greeting">Hello, {{ current_user.username }}!</span>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="app-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-container">
+            <!-- The legend variable comes from your Flask route -->
+            <h1>{{ legend }}</h1>
+
+            <!--
+                The 'form' variable is passed from your Flask add_todo/edit_todo route.
+                It will be either an instance of TodoForm or EditTodoForm.
+            -->
+            <form method="POST" action=""> <!-- Action is current URL, fine for Flask-WTF -->
+                {{ form.hidden_tag() }} <!-- CSRF protection and other hidden fields -->
+
+                <div class="form-group">
+                    {{ form.title.label }}
+                    {{ form.title(class="form-control", placeholder="E.g., Buy groceries") }}
+                    {% if form.title.errors %}
+                        <div class="field-error">
+                            {% for error in form.title.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.description.label }}
+                    {{ form.description(class="form-control", rows="4", placeholder="Any additional details...") }}
+                    {% if form.description.errors %}
+                        <div class="field-error">
+                            {% for error in form.description.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.due_date.label }}
+                    {{ form.due_date(class="form-control") }} <!-- WTForms DateField will render type="date" -->
+                    {% if form.due_date.errors %}
+                        <div class="field-error">
+                            {% for error in form.due_date.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.priority.label }}
+                    {{ form.priority(class="form-control") }}
+                    {% if form.priority.errors %}
+                        <div class="field-error">
+                            {% for error in form.priority.errors %}<span>{{ error }}</span>{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <!-- The submit button's text will be "Add Todo" or "Update Todo"
+                         based on the form instance (TodoForm vs EditTodoForm) -->
+                    {{ form.submit(class="submit-btn") }}
+                </div>
+            </form>
+            <a href="{{ url_for('view_todos') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Todos</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>© {% if now %}{{ now().year }}{% else %}2024{% endif %} Your Todo App. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>

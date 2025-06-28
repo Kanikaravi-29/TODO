@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Todo App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Body and Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: #004085; /* From your login page */
+            padding: 1rem 1.5rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+        .navbar a:hover {
+            color: #c2e9fb; /* Lighter blue for hover */
+        }
+        .navbar .brand a {
+            font-size: 1.3rem; /* Slightly larger brand */
+            font-weight: bold;
+            margin-left: 0;
+        }
+        .navbar .nav-links .user-greeting {
+            margin-right: 15px;
+            font-size: 0.9rem;
+        }
+        .badge-notification {
+            background-color: #e74c3c; /* Red for notifications */
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            vertical-align: super; /* Better alignment */
+            margin-left: 2px;
+        }
+
+        /* Main App Container */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 25px 20px; /* Increased padding */
+        }
+
+        /* Flash Messages Styling */
+        .flash-messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0; /* Increased bottom margin */
+        }
+        .flash-messages li {
+            padding: 12px 18px; /* Increased padding */
+            margin-bottom: 12px; /* Increased margin */
+            border-radius: 6px; /* More rounded */
+            font-size: 0.95rem; /* Slightly larger font */
+            border: 1px solid transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .flash-messages .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .flash-messages .danger  { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .flash-messages .info    { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+
+        /* Dashboard Specific Styles */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 35px; /* Increased margin */
+        }
+        .dashboard-header h1 {
+            color: #2c3e50;
+            font-size: 2.4rem; /* Larger main title */
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .dashboard-header h2.welcome { /* Welcome message */
+            color: #34495e;
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        .dashboard-header .tagline {
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 1rem; /* Slightly larger tagline */
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #3498db, transparent);
+            margin: 35px 0; /* Increased margin */
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Responsive grid, slightly wider min */
+            gap: 25px; /* Increased gap */
+            margin-bottom: 35px; /* Increased margin */
+        }
+        .action-card {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 30px 20px;
+            font-size: 1.15rem; /* Slightly larger font */
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            text-decoration: none;
+            min-height: 190px; /* Increased min height */
+        }
+        .action-card:hover {
+            background-color: #2980b9;
+            transform: translateY(-4px); /* More pronounced hover effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .action-card i {
+            font-size: 2.8rem; /* Larger icons */
+            margin-bottom: 18px; /* Increased margin */
+        }
+        .action-card .count-badge {
+            background-color: rgba(0,0,0,0.25); /* Slightly darker badge */
+            padding: 4px 10px; /* Increased padding */
+            border-radius: 12px; /* More rounded badge */
+            font-size: 0.85rem; /* Slightly larger badge font */
+            margin-top: 10px;
+        }
+
+        .urgent-tasks-section, .quote-section {
+            margin: 35px 0; /* Increased margin */
+            padding: 25px; /* Increased padding */
+            background-color: #e9ecef; /* Slightly different background */
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .urgent-tasks-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px; /* Increased margin */
+            padding-bottom: 12px; /* Increased padding */
+            border-bottom: 1px solid #ced4da; /* Different border color */
+            font-size: 1.6rem; /* Larger section title */
+        }
+        .urgent-tasks-list .task-item {
+            background-color: #fff;
+            padding: 15px; /* Increased padding */
+            border-radius: 6px; /* More rounded */
+            margin-bottom: 12px; /* Increased margin */
+            border-left: 5px solid #e74c3c; /* Thicker border for urgent */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.07); /* Softer shadow */
+        }
+        .urgent-tasks-list .task-item h3 {
+            font-size: 1.1rem; /* Larger task title */
+            color: #34495e;
+            margin: 0 0 6px 0; /* Adjusted margin */
+        }
+        .urgent-tasks-list .task-item small {
+            font-size: 0.85rem; /* Slightly larger small text */
+            color: #7f8c8d;
+            display: block; /* Ensure each small tag is on new line if needed */
+            line-height: 1.4;
+        }
+        .urgent-tasks-list .no-tasks {
+            color: #6c757d; /* Standard Bootstrap muted color */
+            font-style: italic;
+            padding: 10px 0;
+        }
+
+        .quote-section {
+            text-align: center;
+            font-style: italic;
+            color: #5a6268; /* Darker quote color */
+            font-size: 1.05rem; /* Slightly larger quote font */
+            border-top: 1px dashed #ced4da;
+            padding-top: 25px;
+        }
+        .quote-section p {
+            margin-bottom: 5px;
+        }
+        .quote-section cite {
+            font-size: 0.9rem;
+            color: #6c757d;
+            display: block;
+            margin-top: 8px;
+        }
+
+
+        /* Footer Styling */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px 20px; /* Increased padding */
+            border-top: 1px solid #dee2e6; /* Softer border */
+            color: #6c757d; /* Standard Bootstrap muted color */
+            font-size: 0.9rem; /* Slightly larger footer font */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">
+            <a href="{{ url_for('dashboard') }}">TodoApp</a>
+        </div>
+        <div class="nav-links">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('add_todo') }}">Add Todo</a>
+                <a href="{{ url_for('view_todos') }}">View Todos</a>
+                <a href="{{ url_for('notifications_page') }}">
+                    Notifications
+                    {% if unread_notifications_count > 0 %}
+                        <span class="badge-notification">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                <span class="user-greeting">Hello, {{ current_user.username }}!</span>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="app-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h2 class="welcome">Welcome back, {{ current_user.username }}!</h2>
+                <h1>Your Productivity Hub</h1>
+                <p class="tagline">Organize your tasks, manage your time, and achieve your goals.</p>
+            </div>
+
+            <div class="action-grid">
+                <a href="{{ url_for('add_todo') }}" class="action-card">
+                    <i class="fas fa-calendar-plus"></i> <!-- Changed icon -->
+                    Add New Todo
+                </a>
+                <a href="{{ url_for('view_todos') }}" class="action-card">
+                    <i class="fas fa-list-check"></i> <!-- Changed icon -->
+                    View All Todos
+                    {% if pending_tasks_count > 0 %}
+                    <span class="count-badge">{{ pending_tasks_count }} pending</span>
+                    {% else %}
+                    <span class="count-badge">All caught up!</span>
+                    {% endif %}
+                </a>
+                <a href="{{ url_for('notifications_page') }}" class="action-card">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                    {% if unread_notifications_count > 0 %}
+                    <span class="count-badge">{{ unread_notifications_count }} unread</span>
+                    {% else %}
+                    <span class="count-badge">No new alerts</span>
+                    {% endif %}
+                </a>
+            </div>
+
+            <div class="divider"></div>
+
+            {% if urgent_tasks and urgent_tasks|length > 0 %}
+            <div class="urgent-tasks-section">
+                <h2><i class="fas fa-fire-alt"></i> Priority Tasks</h2> <!-- Changed icon and title -->
+                <div class="urgent-tasks-list">
+                    {% for task in urgent_tasks %}
+                    <div class="task-item">
+                        <h3>{{ task.title }}</h3>
+                        {% if task.due_date %}
+                        <small>
+                            Due: {{ task.due_date.strftime('%A, %b %d, %Y') }}
+                            {% if task.due_date.strftime('%H:%M') != '00:00' %}
+                                at {{ task.due_date.strftime('%I:%M %p').lstrip('0') }}
+                            {% endif %}
+                        </small>
+                        {% endif %}
+                        <small>Priority: <strong>{{ task.priority }}</strong></small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="urgent-tasks-section">
+                 <h2><i class="fas fa-thumbs-up"></i> Priority Tasks</h2>
+                <div class="urgent-tasks-list">
+                    <p class="no-tasks">No urgent tasks at the moment. Great job!</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="quote-section">
+                <p>"The bad news is time flies. The good news is you're the pilot."</p>
+                <cite>– Michael Altshuler</cite>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© {% if now %}{{ now().year }}{% else %}2024{% endif %} Your Todo App. All Rights Reserved.</p>
+        <!-- For now().year to work, pass now=datetime.utcnow from your Flask route or use a context processor. -->
+    </footer>
+
+    <!-- Page-specific scripts can be added here if needed -->
+    <!-- <script>
+        // Example: console.log("Dashboard loaded");
+    </script> -->
+</body>
+</html>

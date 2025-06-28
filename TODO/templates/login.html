@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The title will be passed from your Flask route -->
+    <title>{{ title }} - Todo App</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Login Container */
+        .login-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #004085;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Styling for WTForms rendered inputs */
+        .form-group input[type="text"],
+        .form-group input[type="email"], /* Added for email field */
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Specific styling for "Remember Me" checkbox area */
+        .form-check {
+            text-align: left;
+            display: flex; /* For better alignment of checkbox and label */
+            align-items: center;
+            margin-bottom: 15px; /* Spacing below remember me */
+        }
+
+        .form-check input[type="checkbox"] {
+            width: auto; /* Override full width */
+            margin-right: 8px; /* Space between checkbox and label */
+        }
+        .form-check label {
+            font-weight: normal; /* Less prominent than field labels */
+            margin-bottom: 0; /* Remove bottom margin if label had one */
+        }
+
+
+        /* Button Styles */
+        /* WTForms renders submit as <input type="submit">, adjust selector or use form.submit() with class */
+        input[type="submit"],
+        button[type="submit"] { /* Covering both possibilities */
+            width: 100%;
+            padding: 12px;
+            background-color: #004085;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover,
+        button[type="submit"]:hover {
+            background-color: #003366;
+        }
+
+        /* Link Styles */
+        .links-section {
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .links-section a {
+            color: #004085;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .links-section a:hover {
+            text-decoration: underline;
+        }
+        .links-section p {
+            margin-bottom: 10px;
+        }
+
+        /* Message/Error Display (for flash messages) */
+        .message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+        }
+        /* Your app.py uses 'danger' category for login errors */
+        .message.danger { /* Changed from .error to match Flask's 'danger' category */
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.info { /* Added for 'info' category from Flask */
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* For WTForms field-specific errors (optional, but good practice) */
+        .field-error span {
+            color: #721c24; /* Similar to danger message color */
+            font-size: 0.9em;
+            display: block; /* Each error on a new line */
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                width: 90%;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>{{ title }}</h2> <!-- Display title from Flask route -->
+
+        <!-- Display flashed messages from Flask -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Form using Flask-WTF -->
+        <!-- The 'form' variable will be passed from your Flask login route -->
+        <form method="POST" action="{{ url_for('login') }}">
+            {{ form.hidden_tag() }} <!-- Important: CSRF protection token -->
+
+            <div class="form-group">
+                {{ form.email.label }}
+                <!-- Render the email field from Flask-WTF form -->
+                <!-- Add 'placeholder' directly, WTForms handles 'required' based on validators -->
+                {{ form.email(placeholder="Enter your email") }}
+                {% if form.email.errors %}
+                    <div class="field-error">
+                        {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.password.label }}
+                <!-- Render the password field -->
+                {{ form.password(placeholder="Enter your password") }}
+                {% if form.password.errors %}
+                    <div class="field-error">
+                        {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group form-check"> <!-- Styled div for "Remember Me" -->
+                {{ form.remember() }} <!-- Render the remember_me checkbox -->
+                {{ form.remember.label }} <!-- Render its label -->
+            </div>
+
+            <!-- Render the submit button from the form -->
+            {{ form.submit() }}
+            <!-- Alternatively, if you need more control over the button's HTML:
+            <button type="submit">Login</button>
+            -->
+        </form>
+
+        <div class="links-section">
+            <!-- Update links to use url_for if you have these routes -->
+            <p><a href="#">Forgot Password?</a></p> <!-- Placeholder, implement if needed -->
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a></p>
+        </div>
+    </div>
+
+    <!-- Removed the JavaScript for client-side message display, as Flask's flash messages handle this server-side -->
+</body>
+</html>
