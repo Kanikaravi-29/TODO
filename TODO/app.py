@@ -413,4 +413,6 @@ def inject_unread_notification_count():
     return dict(unread_notifications_count=0)
 
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT or default to 5000
+    app.run(host="0.0.0.0", port=port)
     app.run(debug=True)
