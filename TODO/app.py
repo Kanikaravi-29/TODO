@@ -16,7 +16,7 @@ from flask_wtf.csrf import generate_csrf
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_very_secret_key_here' # Change this!
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_very_secret_key_here')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'todo_app.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -413,6 +413,11 @@ def inject_unread_notification_count():
     return dict(unread_notifications_count=0)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT or default to 5000
-    app.run(host="0.0.0.0", port=port)
-    app.run(debug=True)
+    # Auto-create database tables
+    with app.app_context():
+        db.create_all()  # <-- Added to ensure tables exist
+
+    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT or default
+    app.run(host="0.0.0.0", port=port, debug=True)  # <-- Added debug=True
+
+
